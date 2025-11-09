@@ -12,6 +12,16 @@ export default function TraineeProgress() {
     streak: 0,
     weeklyActivities: [],
   })
+
+  // Safe getter with default values
+  const safeStats = {
+    totalTasks: stats?.totalTasks || 0,
+    completedTasks: stats?.completedTasks || 0,
+    totalDuration: stats?.totalDuration || 0,
+    totalCalories: stats?.totalCalories || 0,
+    streak: stats?.streak || 0,
+    weeklyActivities: stats?.weeklyActivities || [],
+  }
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
@@ -22,8 +32,16 @@ export default function TraineeProgress() {
         console.log('📥 Fetching progress data...')
 
         const res = await api.get(`/trainee/progress`)
-        setStats(res.data.data || {})
-        console.log('✅ Progress fetched:', res.data.data)
+        const data = res.data.data || {}
+        setStats({
+          totalTasks: data.totalTasks || 0,
+          completedTasks: data.completedTasks || 0,
+          totalDuration: data.totalDuration || 0,
+          totalCalories: data.totalCalories || 0,
+          streak: data.streak || 0,
+          weeklyActivities: data.weeklyActivities || [],
+        })
+        console.log('✅ Progress fetched:', data)
       } catch (err) {
         console.error('❌ Error fetching progress:', err.message)
         // Set demo data if API fails
@@ -51,12 +69,12 @@ export default function TraineeProgress() {
     fetchData()
   }, [user])
 
-  const completionPercentage = stats.totalTasks > 0 
-    ? Math.round((stats.completedTasks / stats.totalTasks) * 100)
+  const completionPercentage = safeStats.totalTasks > 0 
+    ? Math.round((safeStats.completedTasks / safeStats.totalTasks) * 100)
     : 0
 
-  const avgDurationPerTask = stats.completedTasks > 0 
-    ? Math.round(stats.totalDuration / stats.completedTasks)
+  const avgDurationPerTask = safeStats.completedTasks > 0 
+    ? Math.round(safeStats.totalDuration / safeStats.completedTasks)
     : 0
 
   return (
@@ -83,7 +101,7 @@ export default function TraineeProgress() {
               </div>
               <div className="text-3xl">🎯</div>
             </div>
-            <p className="text-xs text-white/60">{stats.completedTasks} of {stats.totalTasks} tasks</p>
+            <p className="text-xs text-white/60">{safeStats.completedTasks} of {safeStats.totalTasks} tasks</p>
           </div>
 
           {/* Streak */}
@@ -91,7 +109,7 @@ export default function TraineeProgress() {
             <div className="flex items-center justify-between mb-4">
               <div>
                 <p className="text-white/70 text-sm font-medium">Current Streak</p>
-                <h3 className="text-4xl font-bold text-red-400 mt-2">{loading ? '...' : stats.streak}</h3>
+                <h3 className="text-4xl font-bold text-red-400 mt-2">{loading ? '...' : safeStats.streak}</h3>
               </div>
               <div className="text-3xl">🔥</div>
             </div>
@@ -103,7 +121,7 @@ export default function TraineeProgress() {
             <div className="flex items-center justify-between mb-4">
               <div>
                 <p className="text-white/70 text-sm font-medium">Total Duration</p>
-                <h3 className="text-4xl font-bold text-blue-400 mt-2">{loading ? '...' : (stats.totalDuration / 60).toFixed(1)}</h3>
+                <h3 className="text-4xl font-bold text-blue-400 mt-2">{loading ? '...' : (safeStats.totalDuration / 60).toFixed(1)}</h3>
               </div>
               <div className="text-3xl">⏱️</div>
             </div>
@@ -115,7 +133,7 @@ export default function TraineeProgress() {
             <div className="flex items-center justify-between mb-4">
               <div>
                 <p className="text-white/70 text-sm font-medium">Calories Burned</p>
-                <h3 className="text-4xl font-bold text-green-400 mt-2">{loading ? '...' : stats.totalCalories.toLocaleString()}</h3>
+                <h3 className="text-4xl font-bold text-green-400 mt-2">{loading ? '...' : (safeStats.totalCalories || 0).toLocaleString()}</h3>
               </div>
               <div className="text-3xl">🔥</div>
             </div>
@@ -158,7 +176,7 @@ export default function TraineeProgress() {
                 <div>
                   <h3 className="text-lg font-semibold mb-4">Training Time (minutes)</h3>
                   <div className="flex items-end justify-around gap-2 h-48 mb-4">
-                    {stats.weeklyActivities?.map((day, idx) => (
+                    {safeStats.weeklyActivities?.map((day, idx) => (
                       <div key={idx} className="flex flex-col items-center flex-1">
                         <div className="w-full bg-gradient-to-t from-blue-400 to-blue-300 rounded-t-lg transition-all hover:opacity-80" style={{
                           height: `${Math.max(20, (day.duration || 0) / 2)}px`,
@@ -178,7 +196,7 @@ export default function TraineeProgress() {
                 <div>
                   <h3 className="text-lg font-semibold mb-4">Calories Burned</h3>
                   <div className="flex items-end justify-around gap-2 h-48">
-                    {stats.weeklyActivities?.map((day, idx) => (
+                    {safeStats.weeklyActivities?.map((day, idx) => (
                       <div key={idx} className="flex flex-col items-center flex-1">
                         <div className="w-full bg-gradient-to-t from-green-400 to-green-300 rounded-t-lg transition-all hover:opacity-80" style={{
                           height: `${Math.max(20, (day.calories || 0) / 20)}px`,
@@ -216,7 +234,7 @@ export default function TraineeProgress() {
               <div className="flex items-center gap-3 p-4 bg-[#001a3d] rounded-lg border border-green-400/20">
                 <div className="text-3xl">🔥</div>
                 <div>
-                  <div className="font-semibold">{stats.streak > 3 ? 'Hot Streak!' : 'Building Momentum'}</div>
+                  <div className="font-semibold">{safeStats.streak > 3 ? 'Hot Streak!' : 'Building Momentum'}</div>
                   <div className="text-xs text-white/60">Keep up the consistency!</div>
                 </div>
               </div>
@@ -240,18 +258,20 @@ export default function TraineeProgress() {
               </div>
               <div className="flex justify-between items-center p-4 bg-[#001a3d] rounded-lg">
                 <div className="text-sm text-white/70">Tasks Remaining</div>
-                <div className="text-lg font-bold text-blue-400">{stats.totalTasks - stats.completedTasks}</div>
+                <div className="text-lg font-bold text-blue-400">{safeStats.totalTasks - safeStats.completedTasks}</div>
               </div>
               <div className="flex justify-between items-center p-4 bg-[#001a3d] rounded-lg">
                 <div className="text-sm text-white/70">Avg. Calories/Task</div>
                 <div className="text-lg font-bold text-green-400">
-                  {stats.completedTasks > 0 ? Math.round(stats.totalCalories / stats.completedTasks) : 0}
+                  {safeStats.completedTasks > 0 ? Math.round(safeStats.totalCalories / safeStats.completedTasks) : 0}
                 </div>
               </div>
               <div className="flex justify-between items-center p-4 bg-[#001a3d] rounded-lg">
                 <div className="text-sm text-white/70">Best Day</div>
                 <div className="text-lg font-bold text-red-400">
-                  {stats.weeklyActivities?.reduce((max, day) => (day.tasks > max.tasks) ? day : max, {day: 'N/A'}).day || 'N/A'}
+                  {safeStats.weeklyActivities?.length > 0 
+                    ? safeStats.weeklyActivities.reduce((max, day) => ((day?.tasks || 0) > (max?.tasks || 0)) ? day : max, {day: 'N/A', tasks: 0}).day 
+                    : 'N/A'}
                 </div>
               </div>
             </div>
