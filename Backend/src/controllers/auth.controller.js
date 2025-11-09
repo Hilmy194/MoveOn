@@ -119,17 +119,14 @@ export const register = async (req, res) => {
       return errorResponse(res, 'Username or email already exists', 400);
     }
 
-    // Hash password
-    const salt = await bcrypt.genSalt(10);
-    const hashedPassword = await bcrypt.hash(password, salt);
+    // ⭐ DON'T hash here - let Model pre-save hook handle it
+    // This prevents double hashing issue
 
-    console.log('✅ Password hashed');
-
-    // Create user
+    // Create user (password will be hashed automatically by model)
     const user = new User({
       username,
       email,
-      password: hashedPassword,
+      password: password, // ⭐ Plain password - will be hashed by model
       full_name,
       role: role || 'trainee',
       profile_picture: '',
