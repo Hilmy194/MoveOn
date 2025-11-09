@@ -17,7 +17,8 @@ router.use(authenticateToken);
 router.post('/', createAssignment);
 router.get('/trainee/:traineeId', getAssignmentsByTrainee);
 router.get('/coach/:coachId', getAssignmentsByCoach);
-router.patch('/:assignmentId', updateAssignmentStatus);
+router.patch('/:assignmentId/status', updateAssignmentStatus); // Update status
+router.patch('/:assignmentId', updateAssignmentStatus); // Alias for backward compatibility
 router.delete('/:assignmentId', deleteAssignment);
 
 export default router;

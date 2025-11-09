@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
-import api from '../services/api'
+import api, { submissionAPI } from '../services/api'
 import { Button, Card, Badge, StatCard, Skeleton } from '../components/DesignSystem'
 
 export default function TraineeTasksPage() {
@@ -50,16 +50,34 @@ export default function TraineeTasksPage() {
   const handleTaskAction = async (assignmentId, action) => {
     try {
       if (action === 'start') {
-        // Update status to in_progress
-        await api.patch(`/assignments/${assignmentId}`, { status: 'in_progress' })
+        // Update assignment status to in_progress
+        console.log('🚀 Starting task, assignment ID:', assignmentId)
+        await api.patch(`/assignments/${assignmentId}/status`, { status: 'in_progress' })
         alert('✅ Task started!')
         fetchTasks()
       } else if (action === 'complete') {
-        // Submit task completion
+        // Show submission form
+        const duration = prompt('How many minutes did you complete? (e.g., 30):')
+        if (!duration) return
+        
+        const calories = prompt('How many calories did you burn? (estimate):')
         const notes = prompt('Add completion notes (optional):')
-        await api.post(`/trainee/tasks/${assignmentId}/submit`, { notes })
-        alert('✅ Task completed!')
-        fetchTasks()
+        
+        console.log('✅ Submitting task completion, assignment ID:', assignmentId)
+        
+        const submissionData = {
+          assignment_id: assignmentId,
+          duration_minutes: parseInt(duration) || 0,
+          calories_burned: parseInt(calories) || 0,
+          notes: notes || ''
+        }
+        
+        const response = await submissionAPI.submitTask(submissionData)
+        
+        if (response.success) {
+          alert('✅ Task completed and submitted successfully!')
+          fetchTasks()
+        }
       }
     } catch (err) {
       console.error('❌ Error updating task:', err)
@@ -258,7 +276,7 @@ export default function TraineeTasksPage() {
                 <div className="flex gap-2 pt-4 border-t border-white/10">
                   {task.status === 'pending' && (
                     <button
-                      onClick={() => handleTaskAction(task.task_id, 'start')}
+                      onClick={() => handleTaskAction(task.assignment_id, 'start')}
                       className="flex-1 px-4 py-2 bg-yellow-400 hover:bg-yellow-300 text-[#001a3d] font-semibold rounded-lg transition"
                     >
                       Start Task
@@ -266,14 +284,14 @@ export default function TraineeTasksPage() {
                   )}
                   {task.status === 'in_progress' && (
                     <button
-                      onClick={() => handleTaskAction(task.task_id, 'complete')}
+                      onClick={() => handleTaskAction(task.assignment_id, 'complete')}
                       className="flex-1 px-4 py-2 bg-green-500 hover:bg-green-400 text-white font-semibold rounded-lg transition"
                     >
                       ✓ Complete
                     </button>
                   )}
                   <button
-                    onClick={() => navigate(`/trainee/tasks/${task.task_id}`)}
+                    onClick={() => navigate(`/trainee/tasks/${task.assignment_id}`)}
                     className="flex-1 px-4 py-2 border border-white/20 text-white hover:border-white/40 rounded-lg transition"
                   >
                     View Details

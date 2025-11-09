@@ -3,6 +3,7 @@ import {
   getCoachProfile, 
   updateCoachProfile, 
   getCoachTrainees,
+  getAvailableTrainees,
   addTrainee,
   removeTrainee,
   getTraineeDetail,
@@ -24,6 +25,8 @@ router.put('/profile', updateCoachProfile);
 
 // Trainees
 router.get('/trainees', getCoachTrainees);
+router.get('/available-trainees', getAvailableTrainees); // ⭐ New endpoint
+router.get('/search-trainees', getAvailableTrainees); // Alias for backward compatibility
 router.post('/trainees', addTrainee);
 router.delete('/trainees/:traineeId', removeTrainee);
 router.get('/trainees/:traineeId', getTraineeDetail);

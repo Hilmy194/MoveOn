@@ -13,6 +13,7 @@ import traineeRoutes from './src/routes/trainee.routes.js';
 import taskRoutes from './src/routes/task.routes.js';
 import assignmentRoutes from './src/routes/assignment.routes.js';
 import dashboardRoutes from './src/routes/dashboard.routes.js';
+import submissionRoutes from './src/routes/submission.routes.js';
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -54,6 +55,7 @@ app.use('/api/trainee', traineeRoutes);
 app.use('/api/tasks', taskRoutes);
 app.use('/api/assignments', assignmentRoutes);
 app.use('/api/dashboard', dashboardRoutes);
+app.use('/api/submissions', submissionRoutes);
 
 // 404 handler
 app.use((req, res) => {

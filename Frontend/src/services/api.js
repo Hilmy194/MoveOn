@@ -382,6 +382,101 @@ export const assignmentAPI = {
   },
 };
 
+// ==================== SUBMISSION APIs ====================
+
+export const submissionAPI = {
+  // Submit task (trainee)
+  submitTask: async (submissionData) => {
+    try {
+      const response = await api.post('/submissions', submissionData);
+      return response.data;
+    } catch (error) {
+      throw error.response?.data || { success: false, message: 'Failed to submit task' };
+    }
+  },
+
+  // Get my submissions (trainee)
+  getMySubmissions: async (status = '') => {
+    try {
+      const response = await api.get(`/submissions/my-submissions${status ? `?status=${status}` : ''}`);
+      return response.data;
+    } catch (error) {
+      throw error.response?.data || { success: false, message: 'Failed to get submissions' };
+    }
+  },
+
+  // Get submission by ID
+  getSubmissionById: async (submissionId) => {
+    try {
+      const response = await api.get(`/submissions/${submissionId}`);
+      return response.data;
+    } catch (error) {
+      throw error.response?.data || { success: false, message: 'Failed to get submission' };
+    }
+  },
+
+  // Update my submission (trainee)
+  updateMySubmission: async (submissionId, updates) => {
+    try {
+      const response = await api.put(`/submissions/${submissionId}`, updates);
+      return response.data;
+    } catch (error) {
+      throw error.response?.data || { success: false, message: 'Failed to update submission' };
+    }
+  },
+
+  // Get coach's submissions
+  getCoachSubmissions: async (filters = {}) => {
+    try {
+      const params = new URLSearchParams(filters).toString();
+      const response = await api.get(`/submissions/coach/all${params ? `?${params}` : ''}`);
+      return response.data;
+    } catch (error) {
+      throw error.response?.data || { success: false, message: 'Failed to get submissions' };
+    }
+  },
+
+  // Get trainee submissions (coach view)
+  getTraineeSubmissions: async (traineeId) => {
+    try {
+      const response = await api.get(`/submissions/trainee/${traineeId}`);
+      return response.data;
+    } catch (error) {
+      throw error.response?.data || { success: false, message: 'Failed to get trainee submissions' };
+    }
+  },
+
+  // Get assignment submissions
+  getAssignmentSubmissions: async (assignmentId) => {
+    try {
+      const response = await api.get(`/submissions/assignment/${assignmentId}`);
+      return response.data;
+    } catch (error) {
+      throw error.response?.data || { success: false, message: 'Failed to get assignment submissions' };
+    }
+  },
+
+  // Review submission (coach)
+  reviewSubmission: async (submissionId, reviewData) => {
+    try {
+      const response = await api.patch(`/submissions/${submissionId}/review`, reviewData);
+      return response.data;
+    } catch (error) {
+      throw error.response?.data || { success: false, message: 'Failed to review submission' };
+    }
+  },
+
+  // Delete submission
+  deleteSubmission: async (submissionId) => {
+    try {
+      const response = await api.delete(`/submissions/${submissionId}`);
+      return response.data;
+    } catch (error) {
+      throw error.response?.data || { success: false, message: 'Failed to delete submission' };
+    }
+  },
+};
+
 // ==================== DASHBOARD APIs ====================
 
 export const dashboardAPI = {

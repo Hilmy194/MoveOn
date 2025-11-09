@@ -72,7 +72,7 @@ export default function CoachTraineesPage() {
   };
 
   const handleViewDetails = (traineeId) => {
-    navigate(`/coach/trainees/${traineeId}`);
+    navigate(`/coach/trainee/${traineeId}`);
   };
 
   return (

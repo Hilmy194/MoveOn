@@ -60,6 +60,60 @@ export const updateCoachProfile = async (req, res) => {
 
 // ==================== TRAINEE MANAGEMENT ====================
 
+// Get available trainees (NOT in coach's team)
+export const getAvailableTrainees = async (req, res) => {
+  try {
+    const coachId = req.user.id;
+    const { search } = req.query;
+
+    console.log('🔍 Getting available trainees for coach:', coachId);
+    console.log('🔍 Search term:', search);
+
+    // Get trainee IDs already in coach's team
+    const existingRelations = await CoachTrainee.find({ coach_id: coachId });
+    const existingTraineeIds = existingRelations.map(rel => rel.trainee_id.toString());
+
+    console.log('📊 Coach already has', existingTraineeIds.length, 'trainees');
+
+    // Build query
+    const query = {
+      role: 'trainee',
+      _id: { $nin: existingTraineeIds } // Exclude already added trainees
+    };
+
+    // Add search if provided
+    if (search && search.trim()) {
+      query.$or = [
+        { username: { $regex: search, $options: 'i' } },
+        { email: { $regex: search, $options: 'i' } },
+        { full_name: { $regex: search, $options: 'i' } }
+      ];
+    }
+
+    // Find available trainees
+    const availableTrainees = await User.find(query)
+      .select('username email full_name profile_picture fitness_level')
+      .limit(50) // Limit results
+      .sort({ createdAt: -1 });
+
+    console.log('✅ Found', availableTrainees.length, 'available trainees');
+
+    const trainees = availableTrainees.map(trainee => ({
+      id: trainee._id,
+      username: trainee.username,
+      email: trainee.email,
+      full_name: trainee.full_name,
+      profile_picture: trainee.profile_picture,
+      fitness_level: trainee.fitness_level
+    }));
+
+    return successResponse(res, trainees, 'Available trainees retrieved successfully');
+  } catch (error) {
+    console.error('❌ Error getting available trainees:', error);
+    return errorResponse(res, error.message, 500);
+  }
+};
+
 export const getCoachTrainees = async (req, res) => {
   try {
     const coachId = req.user.id;
@@ -67,20 +121,23 @@ export const getCoachTrainees = async (req, res) => {
     console.log('📥 Fetching trainees for coach:', coachId);
 
     const coachTrainees = await CoachTrainee.find({ coach_id: coachId })
-      .populate('trainee_id', 'username email full_name profile_picture fitness_level')
+      .populate('trainee_id', 'username email full_name profile_picture fitness_level phone_number')
       .sort({ createdAt: -1 });
 
     console.log(`✅ Found ${coachTrainees.length} trainees`);
 
     const trainees = coachTrainees.map(ct => ({
-      id: ct._id,
-      trainee_id: ct.trainee_id._id,
+      relationship_id: ct._id, // For deletion
+      trainee_id: ct.trainee_id._id, // For navigation/detail
       username: ct.trainee_id.username,
       email: ct.trainee_id.email,
       full_name: ct.trainee_id.full_name,
       profile_picture: ct.trainee_id.profile_picture,
       fitness_level: ct.trainee_id.fitness_level,
+      phone_number: ct.trainee_id.phone_number,
       status: ct.status,
+      notes: ct.notes,
+      start_date: ct.createdAt,
       assigned_at: ct.createdAt
     }));
 
@@ -94,25 +151,41 @@ export const getCoachTrainees = async (req, res) => {
 export const addTrainee = async (req, res) => {
   try {
     const coachId = req.user.id;
-    const { trainee_identifier } = req.body;
+    const { trainee_id, trainee_identifier, notes } = req.body;
 
-    console.log('➕ Adding trainee. Coach:', coachId, 'Trainee:', trainee_identifier);
+    console.log('➕ Adding trainee. Coach:', coachId);
+    console.log('📝 Trainee ID:', trainee_id);
+    console.log('📝 Trainee identifier:', trainee_identifier);
 
-    if (!trainee_identifier) {
-      return errorResponse(res, 'Trainee username or email is required', 400);
+    let trainee;
+
+    // Try by ID first (from modal selection)
+    if (trainee_id) {
+      trainee = await User.findOne({
+        _id: trainee_id,
+        role: 'trainee'
+      });
+    }
+    // Fallback to identifier (username/email) for backward compatibility
+    else if (trainee_identifier) {
+      trainee = await User.findOne({
+        $or: [
+          { username: trainee_identifier },
+          { email: trainee_identifier }
+        ],
+        role: 'trainee'
+      });
     }
 
-    const trainee = await User.findOne({
-      $or: [
-        { username: trainee_identifier },
-        { email: trainee_identifier }
-      ],
-      role: 'trainee'
-    });
+    if (!trainee_id && !trainee_identifier) {
+      return errorResponse(res, 'Trainee ID or identifier is required', 400);
+    }
 
     if (!trainee) {
       return errorResponse(res, 'Trainee not found', 404);
     }
+
+    console.log('✅ Found trainee:', trainee.username);
 
     const existingRelation = await CoachTrainee.findOne({
       coach_id: coachId,
@@ -120,13 +193,14 @@ export const addTrainee = async (req, res) => {
     });
 
     if (existingRelation) {
-      return errorResponse(res, 'Trainee already added', 400);
+      return errorResponse(res, 'Trainee already added to your team', 400);
     }
 
     const coachTrainee = new CoachTrainee({
       coach_id: coachId,
       trainee_id: trainee._id,
-      status: 'active'
+      status: 'active',
+      notes: notes || ''
     });
 
     await coachTrainee.save();
@@ -184,15 +258,21 @@ export const getTraineeDetail = async (req, res) => {
     const coachId = req.user.id;
     const { traineeId } = req.params;
 
+    console.log('👁️ Getting trainee detail. Coach:', coachId, 'Trainee:', traineeId);
+
     const relation = await CoachTrainee.findOne({
       coach_id: coachId,
       trainee_id: traineeId
     }).populate('trainee_id', '-password');
 
+    console.log('🔍 Relation found:', relation ? 'YES' : 'NO');
+
     if (!relation) {
+      console.log('❌ Trainee not found in coach team');
       return errorResponse(res, 'Trainee not found in your team', 404);
     }
 
+    console.log('✅ Returning trainee:', relation.trainee_id?.username);
     return successResponse(res, relation.trainee_id, 'Trainee detail retrieved successfully');
   } catch (error) {
     console.error('❌ Error fetching trainee detail:', error);
