@@ -16,6 +16,8 @@ import TraineeDashboard from './pages/TraineeDashboard.jsx'
 import TraineeTasks from './pages/TraineeTasks.jsx'
 import TraineeProgress from './pages/TraineeProgress.jsx'
 import TraineeProfile from './pages/TraineeProfile.jsx'
+import MealPlanner from './pages/MealPlanner.jsx'
+import AIAssistant from './pages/AIAssistant.jsx'
 import { createBrowserRouter, RouterProvider } from 'react-router-dom'
 import { AuthProvider } from './context/AuthContext.jsx'
 
@@ -26,6 +28,8 @@ const router = createBrowserRouter([
       { path: '/', element: <HomeLanding /> },
       { path: '/features', element: <FeaturesPage /> },
       { path: '/feature/:slug', element: <FeatureDetail /> },
+      { path: '/meal-planner', element: <MealPlanner /> },
+      { path: '/ai-assistant', element: <AIAssistant /> },
       { path: '/login', element: <LoginPage /> },
       { path: '/register', element: <RegisterPage /> },
       { path: '/chat', element: <ChatPage /> },

@@ -32,6 +32,8 @@ export const login = async (req, res) => {
     const { username, password } = req.body;
 
     console.log('🔐 [LOGIN] Attempt for:', username);
+    console.log('📝 [LOGIN] Request body:', req.body);
+    console.log('🔑 [LOGIN] Headers:', req.headers);
 
     if (!username || !password) {
       return errorResponse(res, 'Username and password are required', 400);
