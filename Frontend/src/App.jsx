@@ -44,6 +44,7 @@ export default function App() {
               <NavLink to="/coach/dashboard" className={({isActive}) => `hover:text-yellow-400 transition-colors ${isActive ? 'text-yellow-400' : ''}`}>Dashboard</NavLink>
               <NavLink to="/coach/trainees" className={({isActive}) => `hover:text-yellow-400 transition-colors ${isActive ? 'text-yellow-400' : ''}`}>Trainees</NavLink>
               <NavLink to="/coach/tasks" className={({isActive}) => `hover:text-yellow-400 transition-colors ${isActive ? 'text-yellow-400' : ''}`}>Tasks</NavLink>
+              <NavLink to="/ai-assistant" className={({isActive}) => `hover:text-yellow-400 transition-colors ${isActive ? 'text-yellow-400' : ''}`}>AI Assistant</NavLink>
             </>
           )}
           {user?.role === 'trainee' && (
@@ -51,6 +52,7 @@ export default function App() {
               <NavLink to="/trainee/dashboard" className={({isActive}) => `hover:text-yellow-400 transition-colors ${isActive ? 'text-yellow-400' : ''}`}>Dashboard</NavLink>
               <NavLink to="/trainee/tasks" className={({isActive}) => `hover:text-yellow-400 transition-colors ${isActive ? 'text-yellow-400' : ''}`}>My Tasks</NavLink>
               <NavLink to="/trainee/progress" className={({isActive}) => `hover:text-yellow-400 transition-colors ${isActive ? 'text-yellow-400' : ''}`}>Progress</NavLink>
+              <NavLink to="/ai-assistant" className={({isActive}) => `hover:text-yellow-400 transition-colors ${isActive ? 'text-yellow-400' : ''}`}>AI Assistant</NavLink>
             </>
           )}
           {!user && <NavLink to="/login" className={({isActive}) => `px-4 py-1.5 border border-yellow-400 text-yellow-400 rounded hover:bg-yellow-400 hover:text-[#001a3d] transition-colors text-sm font-medium ${isActive ? 'bg-yellow-400 text-[#001a3d]' : ''}`}>Log in</NavLink>}
