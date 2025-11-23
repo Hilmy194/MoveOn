@@ -2,7 +2,6 @@ import React, { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import api from '../services/api'
-import { workoutTemplates } from '../data/mockCoachData.js'
 
 export default function AssignTaskPage() {
   const navigate = useNavigate()
@@ -48,6 +47,15 @@ export default function AssignTaskPage() {
       fetchTrainees()
     }
   }, [user])
+
+  const quickTemplates = [
+    { id: 'strength', name: '💪 Strength Training', description: 'Build muscle and increase strength', defaultDuration: 60, icon: '💪' },
+    { id: 'cardio', name: '🏃 Cardio Workout', description: 'Improve cardiovascular endurance', defaultDuration: 45, icon: '🏃' },
+    { id: 'hiit', name: '🔥 HIIT Session', description: 'High-intensity interval training', defaultDuration: 30, icon: '🔥' },
+    { id: 'flexibility', name: '🧘 Flexibility & Mobility', description: 'Stretching and mobility work', defaultDuration: 30, icon: '🧘' },
+    { id: 'functional', name: '⚡ Functional Training', description: 'Full-body functional movements', defaultDuration: 50, icon: '⚡' },
+    { id: 'custom', name: '✏️ Custom Workout', description: 'Create your own workout from scratch', defaultDuration: 60, icon: '✏️' }
+  ]
 
   const handleTemplateSelect = (template) => {
     setForm(prev => ({
@@ -172,7 +180,7 @@ export default function AssignTaskPage() {
               <div>
                 <h2 className="text-2xl font-bold mb-6">Choose Workout Template</h2>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-8">
-                  {workoutTemplates.map(template => (
+                  {quickTemplates.map(template => (
                     <button
                       key={template.id}
                       type="button"

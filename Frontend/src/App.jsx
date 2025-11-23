@@ -1,7 +1,33 @@
 import React, { useState } from 'react'
 import { NavLink, Outlet, useNavigate } from 'react-router-dom'
-import { features } from './data/features.jsx'
 import { useAuth } from './context/AuthContext.jsx'
+
+const features = [
+  {
+    slug: 'meal-planning',
+    title: 'AI Meal Planning',
+    icon: '🍽️',
+    short: 'Personalized nutrition plans powered by AI'
+  },
+  {
+    slug: 'workout-tracking',
+    title: 'Workout Tracking',
+    icon: '💪',
+    short: 'Track your progress and stay motivated'
+  },
+  {
+    slug: 'coach-support',
+    title: 'Coach Support',
+    icon: '👨‍🏫',
+    short: 'Get guidance from certified coaches'
+  },
+  {
+    slug: 'progress-analytics',
+    title: 'Progress Analytics',
+    icon: '📊',
+    short: 'Detailed insights into your fitness journey'
+  }
+]
 
 export default function App() {
   const { user, logout } = useAuth()

@@ -1,6 +1,32 @@
 import React from 'react'
-import { NavLink } from 'react-router-dom'
-import { features } from '../data/features.jsx'
+import { Link } from 'react-router-dom'
+
+const features = [
+  {
+    slug: 'meal-planning',
+    title: 'AI Meal Planning',
+    icon: '🍽️',
+    shortDesc: 'Personalized nutrition plans powered by AI',
+    fullDesc: 'Get customized meal plans based on your goals, dietary preferences, and restrictions.',
+    benefits: ['Personalized nutrition', 'Easy to follow', 'Flexible meal options']
+  },
+  {
+    slug: 'workout-tracking',
+    title: 'Workout Tracking',
+    icon: '💪',
+    shortDesc: 'Track your progress and stay motivated',
+    fullDesc: 'Monitor your workouts, track progress, and achieve your fitness goals.',
+    benefits: ['Progress monitoring', 'Detailed analytics', 'Achievement tracking']
+  },
+  {
+    slug: 'coach-support',
+    title: 'Coach Support',
+    icon: '👨‍🏫',
+    shortDesc: 'Get guidance from certified coaches',
+    fullDesc: 'Work with professional coaches who provide personalized guidance and support.',
+    benefits: ['Expert guidance', 'Personalized plans', '24/7 support']
+  }
+]
 
 export default function FeaturesPage() {
   return (

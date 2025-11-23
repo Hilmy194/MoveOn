@@ -1,6 +1,5 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react'
 import { useAuth } from '../context/AuthContext.jsx'
-import { askMealAssistant } from '../services/aiClient.js'
 
 export default function ChatPage() {
   const { user } = useAuth()
@@ -39,11 +38,13 @@ export default function ChatPage() {
     setInput('')
     setLoading(true)
     try {
-      const reply = await askMealAssistant({
-        messages: next,
-        userProfile: user ? { email: user.email, role: user.role } : undefined,
-        system: systemPreamble
-      })
+      // TODO: Integrate with backend AI chat API
+      // For now, show placeholder response
+      const reply = {
+        role: 'assistant',
+        content: 'Fitur AI Chat sedang dalam pengembangan. Silakan gunakan fitur lain seperti Task Assignment dan Meal Planning.',
+        ts: Date.now()
+      }
       setMessages(m => [...m, reply])
     } catch (err) {
       console.error(err)
