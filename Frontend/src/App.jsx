@@ -59,10 +59,6 @@ export default function App() {
           {user?.role !== 'coach' && user?.role !== 'trainee' && (
             <>
               <NavLink to="/" end className={({isActive}) => `hover:text-yellow-400 transition-colors ${isActive ? 'text-yellow-400' : ''}`}>Home</NavLink>
-              <NavLink to="/features" className={({isActive}) => `hover:text-yellow-400 transition-colors ${isActive ? 'text-yellow-400' : ''}`}>Features</NavLink>
-              <NavLink to="/chat" className={({isActive}) => `hover:text-yellow-400 transition-colors ${isActive ? 'text-yellow-400' : ''}`}>Chat</NavLink>
-              <a href="#about" className="hover:text-yellow-400 transition-colors">About</a>
-              <a href="#contact" className="hover:text-yellow-400 transition-colors">Contact</a>
             </>
           )}
           {user?.role === 'coach' && (
@@ -70,7 +66,7 @@ export default function App() {
               <NavLink to="/coach/dashboard" className={({isActive}) => `hover:text-yellow-400 transition-colors ${isActive ? 'text-yellow-400' : ''}`}>Dashboard</NavLink>
               <NavLink to="/coach/trainees" className={({isActive}) => `hover:text-yellow-400 transition-colors ${isActive ? 'text-yellow-400' : ''}`}>Trainees</NavLink>
               <NavLink to="/coach/tasks" className={({isActive}) => `hover:text-yellow-400 transition-colors ${isActive ? 'text-yellow-400' : ''}`}>Tasks</NavLink>
-              <NavLink to="/ai-assistant" className={({isActive}) => `hover:text-yellow-400 transition-colors ${isActive ? 'text-yellow-400' : ''}`}>AI Assistant</NavLink>
+              <NavLink to="/coach/statistics" className={({isActive}) => `hover:text-yellow-400 transition-colors ${isActive ? 'text-yellow-400' : ''}`}>Statistics</NavLink>
             </>
           )}
           {user?.role === 'trainee' && (
@@ -110,10 +106,6 @@ export default function App() {
           <div id="mobile-menu" className="absolute top-[64px] right-0 left-0 mx-3 bg-[#001f47] border border-white/10 rounded-lg shadow-xl p-4">
             <div className="flex flex-col gap-3 text-sm">
               <NavLink to="/" end onClick={() => setMobileOpen(false)} className={({isActive}) => `px-3 py-2 rounded ${isActive ? 'bg-[#003266] text-yellow-300' : 'hover:bg-white/5'}`}>Home</NavLink>
-              <NavLink to="/features" onClick={() => setMobileOpen(false)} className={({isActive}) => `px-3 py-2 rounded ${isActive ? 'bg-[#003266] text-yellow-300' : 'hover:bg-white/5'}`}>Features</NavLink>
-              <NavLink to="/chat" onClick={() => setMobileOpen(false)} className={({isActive}) => `px-3 py-2 rounded ${isActive ? 'bg-[#003266] text-yellow-300' : 'hover:bg-white/5'}`}>Chat</NavLink>
-              <a href="#about" onClick={() => setMobileOpen(false)} className="px-3 py-2 rounded hover:bg-white/5">About</a>
-              <a href="#contact" onClick={() => setMobileOpen(false)} className="px-3 py-2 rounded hover:bg-white/5">Contact</a>
               <div className="h-px bg-white/10 my-1" />
               {!user && (
                 <div className="grid grid-cols-2 gap-2">
@@ -159,7 +151,7 @@ export function HomeLanding() {
             Empowering coaches and participants with personalized workout and meal planning.
           </p>
           <div className="mt-6 md:mt-8">
-            <NavLink to="/features" className="inline-block bg-yellow-400 text-[#001a3d] font-semibold px-6 py-3 rounded shadow hover:shadow-lg hover:bg-yellow-300 transition">Get Started</NavLink>
+            <NavLink to="/login" className="inline-block bg-yellow-400 text-[#001a3d] font-semibold px-6 py-3 rounded shadow hover:shadow-lg hover:bg-yellow-300 transition">Get Started</NavLink>
           </div>
         </div>
         {/* Illustration (simple placeholder lines) */}
@@ -178,14 +170,13 @@ export function HomeLanding() {
         <h2 className="text-center text-2xl md:text-3xl font-bold tracking-wide text-yellow-400 mb-8 md:mb-12">FEATURES</h2>
         <div className="grid gap-5 sm:gap-6 md:gap-8 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
           {features.map((f) => (
-            <NavLink to={`/feature/${f.slug}`} key={f.slug} className="bg-[#001f47] rounded-lg p-6 shadow-sm border border-white/5 hover:border-yellow-400/40 transition group focus:outline-none focus:ring-2 focus:ring-yellow-400">
-              <div className="w-12 h-12 mb-4 flex items-center justify-center rounded-md bg-[#003266] text-yellow-400 group-hover:scale-110 transition-transform">
+            <div key={f.slug} className="bg-[#001f47] rounded-lg p-6 shadow-sm border border-white/5">
+              <div className="w-12 h-12 mb-4 flex items-center justify-center rounded-md bg-[#003266] text-yellow-400">
                 {f.icon}
               </div>
               <h3 className="font-semibold mb-2">{f.title}</h3>
               <p className="text-sm text-white/70 leading-relaxed">{f.short}</p>
-              <span className="mt-3 inline-block text-xs font-medium text-yellow-400 group-hover:underline">Learn More →</span>
-            </NavLink>
+            </div>
           ))}
         </div>
       </section>

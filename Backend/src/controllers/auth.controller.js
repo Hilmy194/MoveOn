@@ -102,36 +102,48 @@ export const register = async (req, res) => {
   try {
     const { username, email, password, full_name, role } = req.body;
 
-    console.log('📝 [REGISTER]:', username);
+    console.log('📝 [REGISTER] Request received:', { username, email, role });
 
-    if (!username || !email || !password || !full_name) {
-      return errorResponse(res, 'All fields required', 400);
+    // Validation
+    if (!username || !email || !password || !role) {
+      return errorResponse(res, 'All fields are required', 400);
+    }
+
+    if (!['coach', 'trainee'].includes(role)) {
+      return errorResponse(res, 'Invalid role. Must be coach or trainee', 400);
     }
 
     if (password.length < 6) {
-      return errorResponse(res, 'Password min 6 chars', 400);
+      return errorResponse(res, 'Password must be at least 6 characters', 400);
     }
 
-    // Check exists
-    const exists = await User.findOne({
-      $or: [{ username }, { email }]
+    // Check existing user
+    const existingUser = await User.findOne({
+      $or: [{ email }, { username }]
     });
 
-    if (exists) {
-      return errorResponse(res, 'Username or email already exists', 400);
+    if (existingUser) {
+      if (existingUser.email === email) {
+        return errorResponse(res, 'Email already registered', 400);
+      }
+      if (existingUser.username === username) {
+        return errorResponse(res, 'Username already taken', 400);
+      }
     }
 
-    // ⭐ DON'T hash here - let Model pre-save hook handle it
-    // This prevents double hashing issue
+    console.log('✅ Validation passed, creating user...');
 
-    // Create user (password will be hashed automatically by model)
+    // Hash password
+    const hashedPassword = await bcrypt.hash(password, 10);
+
+    // Create user
     const user = new User({
-      username,
-      email,
-      password: password, // ⭐ Plain password - will be hashed by model
-      full_name,
-      role: role || 'trainee',
-      profile_picture: '',
+      username: username.trim(),
+      email: email.toLowerCase().trim(),
+      password: hashedPassword,
+      full_name: full_name?.trim() || username.trim(),
+      role,
+      profile_picture: null,
       bio: '',
       phone_number: '',
       fitness_level: role === 'trainee' ? 'beginner' : undefined
@@ -139,7 +151,7 @@ export const register = async (req, res) => {
 
     await user.save();
 
-    console.log('✅ User created:', user.username);
+    console.log('✅ User created successfully:', user.username, 'Role:', user.role);
 
     // Generate tokens
     const token = generateToken(user);
@@ -155,6 +167,8 @@ export const register = async (req, res) => {
       refreshToken
     };
 
+    console.log('✅ [REGISTER] Success for role:', role);
+    
     return successResponse(res, userData, 'Registration successful', 201);
 
   } catch (error) {

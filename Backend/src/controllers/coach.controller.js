@@ -497,3 +497,105 @@ export const deleteTask = async (req, res) => {
     return errorResponse(res, error.message, 500);
   }
 };
+
+export const sendFeedbackToTrainee = async (req, res) => {
+  try {
+    console.log('🔔 [FEEDBACK] Function called!');
+    console.log('🔔 [FEEDBACK] User:', req.user);
+    console.log('🔔 [FEEDBACK] Params:', req.params);
+    console.log('🔔 [FEEDBACK] Body:', req.body);
+
+    const coachId = req.user.id;
+    const { traineeId } = req.params;
+    const { feedback } = req.body;
+
+    console.log('📤 [FEEDBACK] Coach ID:', coachId);
+    console.log('📤 [FEEDBACK] Trainee ID:', traineeId);
+    console.log('📤 [FEEDBACK] Feedback text:', feedback);
+
+    if (!feedback || !feedback.trim()) {
+      console.log('❌ [FEEDBACK] Feedback is empty');
+      return errorResponse(res, 'Feedback text is required', 400);
+    }
+
+    // Verify coach-trainee relationship
+    console.log('🔍 [FEEDBACK] Finding relationship...');
+    const relation = await CoachTrainee.findOne({
+      coach_id: coachId,
+      trainee_id: traineeId
+    });
+
+    console.log('🔍 [FEEDBACK] Relationship found:', relation ? 'YES' : 'NO');
+    
+    if (!relation) {
+      console.log('❌ [FEEDBACK] No relationship found!');
+      // Try to find all relationships for this coach
+      const allRelations = await CoachTrainee.find({ coach_id: coachId });
+      console.log('📊 [FEEDBACK] Coach has', allRelations.length, 'relationships');
+      allRelations.forEach(r => {
+        console.log('   - Trainee:', r.trainee_id.toString());
+      });
+      return errorResponse(res, 'Trainee not found in your team', 404);
+    }
+
+    console.log('📝 [FEEDBACK] Current notes:', relation.notes || 'EMPTY');
+    console.log('📝 [FEEDBACK] Last feedback at:', relation.last_feedback_at || 'NULL');
+
+    // Create or update feedback in CoachTrainee model
+    relation.notes = feedback.trim();
+    relation.last_feedback_at = new Date();
+    
+    console.log('💾 [FEEDBACK] Saving to database...');
+    const saved = await relation.save();
+    
+    console.log('✅ [FEEDBACK] Saved successfully!');
+    console.log('✅ [FEEDBACK] New notes:', saved.notes);
+    console.log('✅ [FEEDBACK] New last_feedback_at:', saved.last_feedback_at);
+
+    return successResponse(res, {
+      trainee_id: traineeId,
+      feedback: feedback.trim(),
+      sent_at: relation.last_feedback_at
+    }, 'Feedback sent successfully');
+  } catch (error) {
+    console.error('❌ [FEEDBACK] Error:', error);
+    console.error('❌ [FEEDBACK] Stack:', error.stack);
+    return errorResponse(res, error.message, 500);
+  }
+};
+
+export const getCoachAssignments = async (req, res) => {
+  try {
+    const coachId = req.user.id;
+
+    console.log('📋 Fetching task assignments for coach:', coachId);
+
+    const { findByCoachId } = await import('../models/TaskAssignmentModel.js');
+    
+    // Get all assignments created by this coach
+    const assignments = await findByCoachId(coachId);
+
+    console.log(`✅ Found ${assignments.length} task assignments`);
+
+    // Transform data to include necessary information
+    const transformedAssignments = assignments.map(assignment => ({
+      id: assignment._id,
+      task_id: assignment.task_id?._id,
+      task_title: assignment.task_id?.title,
+      task_description: assignment.task_id?.description,
+      trainee_id: assignment.trainee_id?._id,
+      trainee_name: assignment.trainee_id?.full_name || assignment.trainee_id?.username,
+      trainee_email: assignment.trainee_id?.email,
+      status: assignment.status,
+      priority: assignment.priority,
+      due_date: assignment.due_date,
+      completed_at: assignment.completed_at,
+      assigned_at: assignment.createdAt
+    }));
+
+    return successResponse(res, transformedAssignments, 'Task assignments retrieved successfully');
+  } catch (error) {
+    console.error('❌ Error fetching coach assignments:', error);
+    return errorResponse(res, error.message, 500);
+  }
+};

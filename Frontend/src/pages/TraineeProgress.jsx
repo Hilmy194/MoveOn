@@ -27,40 +27,26 @@ export default function TraineeProgress() {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        if (!user?.id) return
-
         console.log('📥 Fetching progress data...')
 
-        const res = await api.get(`/trainee/progress`)
-        const data = res.data.data || {}
-        setStats({
-          totalTasks: data.totalTasks || 0,
-          completedTasks: data.completedTasks || 0,
-          totalDuration: data.totalDuration || 0,
-          totalCalories: data.totalCalories || 0,
-          streak: data.streak || 0,
-          weeklyActivities: data.weeklyActivities || [],
-        })
-        console.log('✅ Progress fetched:', data)
+        const res = await api.get('/trainee/progress')
+        
+        if (res.data.success) {
+          const data = res.data.data || {}
+          console.log('✅ Progress data received:', data)
+          
+          setStats({
+            totalTasks: data.totalTasks || 0,
+            completedTasks: data.completedTasks || 0,
+            totalDuration: data.totalDuration || 0,
+            totalCalories: data.totalCalories || 0,
+            streak: data.streak || 0,
+            weeklyActivities: data.weeklyActivities || [],
+          })
+        }
       } catch (err) {
-        console.error('❌ Error fetching progress:', err.message)
-        // Set demo data if API fails
-        setStats({
-          totalTasks: 10,
-          completedTasks: 6,
-          totalDuration: 450,
-          totalCalories: 3500,
-          streak: 5,
-          weeklyActivities: [
-            { day: 'Mon', tasks: 1, duration: 60, calories: 450 },
-            { day: 'Tue', tasks: 2, duration: 120, calories: 850 },
-            { day: 'Wed', tasks: 1, duration: 45, calories: 350 },
-            { day: 'Thu', tasks: 0, duration: 0, calories: 0 },
-            { day: 'Fri', tasks: 2, duration: 105, calories: 750 },
-            { day: 'Sat', tasks: 1, duration: 60, calories: 400 },
-            { day: 'Sun', tasks: 1, duration: 60, calories: 700 },
-          ],
-        })
+        console.error('❌ Error fetching progress:', err)
+        console.error('Error details:', err.response?.data)
       } finally {
         setLoading(false)
       }
@@ -217,67 +203,6 @@ export default function TraineeProgress() {
         </div>
       </div>
 
-      {/* Performance Insights */}
-      <div className="px-6 md:px-16 py-10">
-        <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-6">
-          {/* Achievements */}
-          <div className="bg-[#002451] rounded-lg p-6 border border-white/10">
-            <h2 className="text-xl font-bold mb-6">🏆 Achievements</h2>
-            <div className="space-y-3">
-              <div className="flex items-center gap-3 p-4 bg-[#001a3d] rounded-lg border border-yellow-400/20">
-                <div className="text-3xl">🎯</div>
-                <div>
-                  <div className="font-semibold">25% Complete</div>
-                  <div className="text-xs text-white/60">Completed 1/4 of tasks</div>
-                </div>
-              </div>
-              <div className="flex items-center gap-3 p-4 bg-[#001a3d] rounded-lg border border-green-400/20">
-                <div className="text-3xl">🔥</div>
-                <div>
-                  <div className="font-semibold">{safeStats.streak > 3 ? 'Hot Streak!' : 'Building Momentum'}</div>
-                  <div className="text-xs text-white/60">Keep up the consistency!</div>
-                </div>
-              </div>
-              <div className="flex items-center gap-3 p-4 bg-[#001a3d] rounded-lg border border-blue-400/20">
-                <div className="text-3xl">💪</div>
-                <div>
-                  <div className="font-semibold">Dedicated</div>
-                  <div className="text-xs text-white/60">You're following your program</div>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* Stats Summary */}
-          <div className="bg-[#002451] rounded-lg p-6 border border-white/10">
-            <h2 className="text-xl font-bold mb-6">📈 Summary</h2>
-            <div className="space-y-4">
-              <div className="flex justify-between items-center p-4 bg-[#001a3d] rounded-lg">
-                <div className="text-sm text-white/70">Avg. Duration per Task</div>
-                <div className="text-lg font-bold text-yellow-400">{avgDurationPerTask} min</div>
-              </div>
-              <div className="flex justify-between items-center p-4 bg-[#001a3d] rounded-lg">
-                <div className="text-sm text-white/70">Tasks Remaining</div>
-                <div className="text-lg font-bold text-blue-400">{safeStats.totalTasks - safeStats.completedTasks}</div>
-              </div>
-              <div className="flex justify-between items-center p-4 bg-[#001a3d] rounded-lg">
-                <div className="text-sm text-white/70">Avg. Calories/Task</div>
-                <div className="text-lg font-bold text-green-400">
-                  {safeStats.completedTasks > 0 ? Math.round(safeStats.totalCalories / safeStats.completedTasks) : 0}
-                </div>
-              </div>
-              <div className="flex justify-between items-center p-4 bg-[#001a3d] rounded-lg">
-                <div className="text-sm text-white/70">Best Day</div>
-                <div className="text-lg font-bold text-red-400">
-                  {safeStats.weeklyActivities?.length > 0 
-                    ? safeStats.weeklyActivities.reduce((max, day) => ((day?.tasks || 0) > (max?.tasks || 0)) ? day : max, {day: 'N/A', tasks: 0}).day 
-                    : 'N/A'}
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
     </div>
   )
 }

@@ -184,15 +184,6 @@ export default function LoginPage() {
             </button>
           </p>
         </div>
-
-        {/* Test Accounts Info */}
-        <div className="mt-6 p-4 bg-blue-500/10 border border-blue-500/30 rounded-lg">
-          <p className="text-sm text-blue-300 font-medium mb-2">🧪 Test Accounts:</p>
-          <div className="text-xs text-blue-200 space-y-1">
-            <p>👨‍🏫 Coach: <code className="bg-blue-900/30 px-2 py-1 rounded">coach1 / password123</code></p>
-            <p>💪 Trainee: <code className="bg-blue-900/30 px-2 py-1 rounded">trainee1 / password123</code></p>
-          </div>
-        </div>
       </div>
     </div>
   )

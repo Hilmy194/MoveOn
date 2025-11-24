@@ -19,29 +19,30 @@ export default function TraineeDashboard() {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        if (!user?.id) return
+        console.log('📥 Fetching trainee dashboard data...')
 
-        console.log('📥 Fetching trainee data...')
-
-        // Fetch assigned tasks
-        const assignRes = await api.get(`/trainee/assignments`)
-        const tasks = assignRes.data.data || []
-        setAssignments(tasks)
-        console.log('✅ Assignments fetched:', tasks)
-
-        // Calculate stats
-        const completed = tasks.filter(t => t.status === 'completed').length
-        const inProgress = tasks.filter(t => t.status === 'in_progress').length
-
-        setStats({
-          totalTasks: tasks.length,
-          completedTasks: completed,
-          inProgressTasks: inProgress,
-          totalCalories: 0,
-          totalHours: tasks.reduce((acc, t) => acc + (t.duration || 0), 0) / 60,
-        })
+        // Fetch dashboard data from the dashboard endpoint
+        const dashboardRes = await api.get('/dashboard/trainee')
+        
+        if (dashboardRes.data.success) {
+          const data = dashboardRes.data.data
+          console.log('✅ Dashboard data received:', data)
+          
+          // Set stats from backend
+          setStats({
+            totalTasks: data.stats?.totalTasks || 0,
+            completedTasks: data.stats?.completed || 0,
+            inProgressTasks: data.stats?.inProgress || 0,
+            totalCalories: 0,
+            totalHours: data.stats?.totalHours || 0,
+          })
+          
+          // Set recent tasks
+          setAssignments(data.recentTasks || [])
+        }
       } catch (err) {
-        console.error('❌ Error fetching data:', err.message)
+        console.error('❌ Error fetching dashboard data:', err)
+        console.error('Error details:', err.response?.data)
       } finally {
         setLoading(false)
       }
@@ -66,13 +67,23 @@ export default function TraineeDashboard() {
               </h1>
               <p className="text-white/70 mt-1">Welcome back, {user?.name}! Here are your assigned tasks.</p>
             </div>
-            <Button 
-              variant="primary"
-              size="lg"
-              onClick={() => window.location.href = '/trainee/profile'}
-            >
-              👤 Profile
-            </Button>
+            <div className="flex gap-3">
+              <Button 
+                variant="secondary"
+                size="lg"
+                onClick={() => window.location.reload()}
+                disabled={loading}
+              >
+                🔄 Refresh
+              </Button>
+              <Button 
+                variant="primary"
+                size="lg"
+                onClick={() => window.location.href = '/trainee/profile'}
+              >
+                👤 Profile
+              </Button>
+            </div>
           </div>
         </div>
       </div>
@@ -99,7 +110,7 @@ export default function TraineeDashboard() {
                 icon="✅" 
                 label="Completed" 
                 value={stats.completedTasks.toString()}
-                trend={Math.round((stats.completedTasks / stats.totalTasks) * 100)}
+                trend={stats.totalTasks > 0 ? Math.round((stats.completedTasks / stats.totalTasks) * 100) : 0}
               />
               <StatCard 
                 icon="⏳" 
@@ -122,23 +133,163 @@ export default function TraineeDashboard() {
         </div>
       </div>
 
-      {/* Progress Bar */}
+      {/* Overall Progress - Enhanced Design */}
       <div className="px-6 md:px-16">
         <div className="max-w-7xl mx-auto">
-          <Card className="p-6">
-            <div className="flex items-center justify-between mb-3">
-              <h3 className="font-semibold text-lg">Overall Progress</h3>
-              <span className="text-sm text-yellow-400 font-bold">{completionPercentage}%</span>
+          <div className="bg-gradient-to-br from-[#002451] via-[#003166] to-[#002451] rounded-2xl p-8 border border-yellow-400/20 shadow-2xl relative overflow-hidden">
+            {/* Background decorative elements */}
+            <div className="absolute top-0 right-0 w-64 h-64 bg-yellow-400/5 rounded-full blur-3xl"></div>
+            <div className="absolute bottom-0 left-0 w-48 h-48 bg-blue-400/5 rounded-full blur-3xl"></div>
+            
+            <div className="relative z-10">
+              <h2 className="text-2xl font-bold text-white mb-6 flex items-center gap-3">
+                <span className="text-3xl">🎯</span>
+                <span>Overall Progress</span>
+              </h2>
+              
+              <div className="grid md:grid-cols-2 gap-8 items-center">
+                {/* Left: Circular Progress */}
+                <div className="flex justify-center">
+                  <div className="relative w-56 h-56">
+                    {/* Background circle */}
+                    <svg className="w-full h-full transform -rotate-90">
+                      <circle
+                        cx="112"
+                        cy="112"
+                        r="100"
+                        stroke="currentColor"
+                        strokeWidth="16"
+                        fill="none"
+                        className="text-white/10"
+                      />
+                      {/* Progress circle with gradient */}
+                      <circle
+                        cx="112"
+                        cy="112"
+                        r="100"
+                        stroke="url(#gradient)"
+                        strokeWidth="16"
+                        fill="none"
+                        strokeLinecap="round"
+                        strokeDasharray={`${2 * Math.PI * 100}`}
+                        strokeDashoffset={`${2 * Math.PI * 100 * (1 - completionPercentage / 100)}`}
+                        className="transition-all duration-1000 ease-out"
+                      />
+                      <defs>
+                        <linearGradient id="gradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                          <stop offset="0%" stopColor="#FBBF24" />
+                          <stop offset="50%" stopColor="#F59E0B" />
+                          <stop offset="100%" stopColor="#EF4444" />
+                        </linearGradient>
+                      </defs>
+                    </svg>
+                    
+                    {/* Center text */}
+                    <div className="absolute inset-0 flex flex-col items-center justify-center">
+                      <div className="text-5xl font-extrabold bg-gradient-to-br from-yellow-400 via-yellow-300 to-orange-400 bg-clip-text text-transparent mb-1">
+                        {completionPercentage}%
+                      </div>
+                      <div className="text-white/60 text-sm font-medium">Complete</div>
+                      <div className="mt-2 flex items-center gap-1">
+                        {completionPercentage >= 75 && <span className="text-2xl">🔥</span>}
+                        {completionPercentage >= 50 && completionPercentage < 75 && <span className="text-2xl">💪</span>}
+                        {completionPercentage >= 25 && completionPercentage < 50 && <span className="text-2xl">📈</span>}
+                        {completionPercentage < 25 && stats.totalTasks > 0 && <span className="text-2xl">🚀</span>}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                
+                {/* Right: Stats breakdown */}
+                <div className="space-y-4">
+                  {/* Completed Tasks */}
+                  <div className="bg-white/5 rounded-xl p-4 border border-white/10">
+                    <div className="flex items-center justify-between mb-2">
+                      <span className="text-white/70 text-sm flex items-center gap-2">
+                        <span className="text-xl">✅</span>
+                        Completed Tasks
+                      </span>
+                      <span className="text-green-400 font-bold text-lg">{stats.completedTasks}</span>
+                    </div>
+                    <div className="w-full bg-white/10 rounded-full h-2">
+                      <div 
+                        className="bg-gradient-to-r from-green-500 to-green-400 h-2 rounded-full transition-all duration-1000"
+                        style={{ width: `${stats.totalTasks > 0 ? (stats.completedTasks / stats.totalTasks) * 100 : 0}%` }}
+                      ></div>
+                    </div>
+                  </div>
+                  
+                  {/* In Progress Tasks */}
+                  <div className="bg-white/5 rounded-xl p-4 border border-white/10">
+                    <div className="flex items-center justify-between mb-2">
+                      <span className="text-white/70 text-sm flex items-center gap-2">
+                        <span className="text-xl">⏳</span>
+                        In Progress
+                      </span>
+                      <span className="text-yellow-400 font-bold text-lg">{stats.inProgressTasks}</span>
+                    </div>
+                    <div className="w-full bg-white/10 rounded-full h-2">
+                      <div 
+                        className="bg-gradient-to-r from-yellow-500 to-yellow-400 h-2 rounded-full transition-all duration-1000"
+                        style={{ width: `${stats.totalTasks > 0 ? (stats.inProgressTasks / stats.totalTasks) * 100 : 0}%` }}
+                      ></div>
+                    </div>
+                  </div>
+                  
+                  {/* Pending Tasks */}
+                  <div className="bg-white/5 rounded-xl p-4 border border-white/10">
+                    <div className="flex items-center justify-between mb-2">
+                      <span className="text-white/70 text-sm flex items-center gap-2">
+                        <span className="text-xl">📋</span>
+                        Pending Tasks
+                      </span>
+                      <span className="text-blue-400 font-bold text-lg">
+                        {stats.totalTasks - stats.completedTasks - stats.inProgressTasks}
+                      </span>
+                    </div>
+                    <div className="w-full bg-white/10 rounded-full h-2">
+                      <div 
+                        className="bg-gradient-to-r from-blue-500 to-blue-400 h-2 rounded-full transition-all duration-1000"
+                        style={{ 
+                          width: `${stats.totalTasks > 0 ? ((stats.totalTasks - stats.completedTasks - stats.inProgressTasks) / stats.totalTasks) * 100 : 0}%` 
+                        }}
+                      ></div>
+                    </div>
+                  </div>
+                  
+                  {/* Total summary */}
+                  <div className="bg-gradient-to-r from-yellow-400/10 to-orange-400/10 rounded-xl p-4 border border-yellow-400/30 mt-4">
+                    <div className="flex items-center justify-between">
+                      <span className="text-yellow-400 font-semibold flex items-center gap-2">
+                        <span className="text-xl">📊</span>
+                        Total Tasks
+                      </span>
+                      <span className="text-white font-bold text-2xl">{stats.totalTasks}</span>
+                    </div>
+                  </div>
+                  
+                  {/* Motivational message */}
+                  <div className="text-center pt-2">
+                    {completionPercentage >= 75 && (
+                      <p className="text-sm text-yellow-400 font-medium">🎉 Amazing work! You're crushing it!</p>
+                    )}
+                    {completionPercentage >= 50 && completionPercentage < 75 && (
+                      <p className="text-sm text-green-400 font-medium">💪 Great progress! Keep it up!</p>
+                    )}
+                    {completionPercentage >= 25 && completionPercentage < 50 && (
+                      <p className="text-sm text-blue-400 font-medium">📈 You're on the right track!</p>
+                    )}
+                    {completionPercentage < 25 && stats.totalTasks > 0 && (
+                      <p className="text-sm text-white/70 font-medium">🚀 Let's get started on those tasks!</p>
+                    )}
+                    {stats.totalTasks === 0 && (
+                      <p className="text-sm text-white/60 font-medium">Waiting for your coach to assign tasks...</p>
+                    )}
+                  </div>
+                </div>
+              </div>
             </div>
-            <ProgressBar 
-              value={completionPercentage}
-              max={100}
-              color="primary"
-            />
-            <p className="text-xs text-white/60 mt-3">
-              {stats.completedTasks} of {stats.totalTasks} tasks completed
-            </p>
-          </Card>
+          </div>
         </div>
       </div>
 
@@ -163,44 +314,47 @@ export default function TraineeDashboard() {
               </div>
             ) : (
               <div className="divide-y divide-white/5">
-                {assignments.slice(0, 5).map(task => (
+                {assignments.map(assignment => (
                   <NavLink
-                    key={task.id}
-                    to={`/trainee/task/${task.id}`}
+                    key={assignment._id}
+                    to={`/trainee/tasks`}
                     className="block p-6 hover:bg-white/5 transition group"
                   >
                     <div className="flex items-start justify-between gap-4">
                       <div className="flex-1">
                         <div className="flex items-center gap-3 mb-2">
                           <h3 className="font-semibold text-white group-hover:text-yellow-400 transition text-lg">
-                            {task.title}
+                            {assignment.task?.title || 'Untitled Task'}
                           </h3>
                           <Badge variant={
-                            task.status === 'completed' ? 'success' :
-                            task.status === 'in_progress' ? 'info' :
-                            task.status === 'assigned' ? 'warning' :
+                            assignment.status === 'completed' ? 'success' :
+                            assignment.status === 'in_progress' ? 'info' :
+                            assignment.status === 'pending' ? 'warning' :
                             'default'
                           }>
-                            {task.status === 'completed' ? '✅ Done' :
-                             task.status === 'in_progress' ? '⏳ In Progress' :
-                             task.status === 'assigned' ? '📋 Assigned' :
-                             'Skipped'}
+                            {assignment.status === 'completed' ? '✅ Done' :
+                             assignment.status === 'in_progress' ? '⏳ In Progress' :
+                             assignment.status === 'pending' ? '📋 Pending' :
+                             assignment.status === 'overdue' ? '⚠️ Overdue' :
+                             'Unknown'}
                           </Badge>
                         </div>
                         
-                        <p className="text-sm text-white/60 mb-3">{task.description}</p>
+                        <p className="text-sm text-white/60 mb-3">{assignment.task?.description || 'No description'}</p>
                         
                         <div className="flex flex-wrap gap-4 text-xs text-white/50">
-                          <span>📅 {task.difficulty || 'N/A'} Level</span>
-                          <span>⏱️ {task.duration ? `${task.duration} mins` : 'N/A'}</span>
-                          {task.due_date && <span>📍 Due: {new Date(task.due_date).toLocaleDateString()}</span>}
+                          <span>📅 {assignment.task?.difficulty || 'N/A'} Level</span>
+                          <span>⏱️ {assignment.task?.duration_minutes ? `${assignment.task.duration_minutes} mins` : 'N/A'}</span>
+                          {assignment.due_date && <span>📍 Due: {new Date(assignment.due_date).toLocaleDateString()}</span>}
+                          {assignment.coach && <span>👨‍🏫 {assignment.coach.full_name || assignment.coach.username}</span>}
                         </div>
                       </div>
 
                       <div className="text-right text-xs">
-                        <div className="text-white/70">{task.exercise_count || 0} exercises</div>
+                        <div className="text-white/70">{assignment.task?.type || 'Task'}</div>
                         <div className="text-yellow-400 font-semibold mt-1">
-                          {task.status === 'completed' ? '100%' : '0%'}
+                          {assignment.status === 'completed' ? '100%' : 
+                           assignment.status === 'in_progress' ? '50%' : '0%'}
                         </div>
                       </div>
                     </div>
