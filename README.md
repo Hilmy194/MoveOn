@@ -529,9 +529,7 @@ This project is licensed under the **ISC License**.
 
 <div align="center">
 
-### Made with ❤️ by MoveOn Team
 
-**⭐ Star this repo if you find it helpful!**
 
 [Back to Top](#️-moveon---fitness-coaching-platform)
 
