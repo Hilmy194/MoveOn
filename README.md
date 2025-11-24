@@ -52,7 +52,6 @@
 - ✅ **Template Library**: Pre-built workout templates for quick assignment
 - ✅ **Progress Monitoring**: Track trainee performance and completion rates
 - ✅ **Analytics Dashboard**: Comprehensive statistics and insights
-- ✅ **Notifications**: Real-time updates on trainee activities
 - ✅ **Profile Management**: Customize coach profile and credentials
 
 ### For Trainees 💪
@@ -62,8 +61,6 @@
 - ✅ **Progress Tracking**: Monitor personal fitness journey
 - ✅ **AI Meal Planner**: Generate customized meal plans based on goals
 - ✅ **Submission System**: Submit workout results and feedback
-- ✅ **Chat Support**: Communicate directly with assigned coach
-- ✅ **Profile Customization**: Manage personal information and goals
 
 ---
 
