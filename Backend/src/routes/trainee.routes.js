@@ -5,7 +5,8 @@ import {
   getTraineeTasks,
   submitTaskCompletion,
   getTraineeProgress,
-  getTraineeNotifications
+  getTraineeNotifications,
+  getCoachFeedback
 } from '../controllers/trainee.controller.js';
 import { authenticateToken, authorizeRoles } from '../middleware/authMiddleware.js';
 
@@ -28,5 +29,8 @@ router.get('/progress', getTraineeProgress);
 
 // Notification routes
 router.get('/notifications', getTraineeNotifications);
+
+// Coach Feedback routes
+router.get('/coach/:coachId/feedback', getCoachFeedback);
 
 export default router;

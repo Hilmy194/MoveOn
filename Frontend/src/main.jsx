@@ -12,8 +12,10 @@ import CoachAssignTask from './pages/CoachAssignTask.jsx'
 import CoachTasks from './pages/CoachTasks.jsx'
 import CoachTraineeDetail from './pages/CoachTraineeDetail.jsx'
 import CoachTraineesPage from './pages/CoachTraineesPage.jsx'
+import CoachStatistics from './pages/CoachStatistics.jsx'
 import TraineeDashboard from './pages/TraineeDashboard.jsx'
 import TraineeTasks from './pages/TraineeTasks.jsx'
+import TraineeTaskDetail from './pages/TraineeTaskDetail.jsx'
 import TraineeProgress from './pages/TraineeProgress.jsx'
 import TraineeProfile from './pages/TraineeProfile.jsx'
 import MealPlanner from './pages/MealPlanner.jsx'
@@ -38,8 +40,10 @@ const router = createBrowserRouter([
       { path: '/coach/tasks', element: <CoachTasks /> },
       { path: '/coach/trainee/:id', element: <CoachTraineeDetail /> },
       { path: '/coach/trainees', element: <CoachTraineesPage /> },
+      { path: '/coach/statistics', element: <CoachStatistics /> },
       { path: '/trainee/dashboard', element: <TraineeDashboard /> },
       { path: '/trainee/tasks', element: <TraineeTasks /> },
+      { path: '/trainee/tasks/:id', element: <TraineeTaskDetail /> },
       { path: '/trainee/progress', element: <TraineeProgress /> },
       { path: '/trainee/profile', element: <TraineeProfile /> },
     ]

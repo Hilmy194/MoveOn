@@ -74,11 +74,9 @@ export default function CoachDashboard() {
 
       {/* KPI Cards */}
       <div className="px-6 md:px-16 py-10">
-        <div className="max-w-7xl mx-auto grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+        <div className="max-w-7xl mx-auto grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 gap-5">
           {loading ? (
             <>
-              <Skeleton />
-              <Skeleton />
               <Skeleton />
               <Skeleton />
             </>
@@ -95,18 +93,6 @@ export default function CoachDashboard() {
                 label="Active Tasks" 
                 value={totalWorkouts.toString()}
                 trend={5}
-              />
-              <StatCard 
-                icon="⏱️" 
-                label="Total Hours Trained" 
-                value="0.0"
-                trend={0}
-              />
-              <StatCard 
-                icon="🔔" 
-                label="Notifications" 
-                value={unreadCount.toString()}
-                trend={unreadCount}
               />
             </>
           )}
@@ -238,7 +224,7 @@ export default function CoachDashboard() {
           <h2 className="text-xl font-bold text-yellow-400 mb-4">Quick Actions</h2>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
             <Card className="text-center group hover:shadow-lg hover:scale-105 transition-transform cursor-pointer">
-              <NavLink to="/coach/trainees" className="block">
+              <NavLink to="/coach/statistics" className="block">
                 <div className="text-3xl mb-2">📊</div>
                 <h3 className="font-semibold text-white group-hover:text-yellow-400 transition">View Statistics</h3>
                 <p className="text-xs text-white/60 mt-1">See detailed trainee stats</p>
@@ -262,7 +248,7 @@ export default function CoachDashboard() {
             </Card>
 
             <Card className="text-center group hover:shadow-lg hover:scale-105 transition-transform cursor-pointer">
-              <NavLink to="/" className="block">
+              <NavLink to="/coach/trainees" className="block">
                 <div className="text-3xl mb-2">📈</div>
                 <h3 className="font-semibold text-white group-hover:text-yellow-400 transition">Progress Report</h3>
                 <p className="text-xs text-white/60 mt-1">Team performance</p>

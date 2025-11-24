@@ -178,8 +178,7 @@ export default function CoachTasksPage() {
             {filteredTasks.map(task => (
               <div
                 key={task._id}
-                className="bg-[#002451] rounded-lg border border-white/10 p-6 hover:border-yellow-400/50 transition cursor-pointer shadow-lg"
-                onClick={() => navigate(`/coach/tasks/${task._id}`)}
+                className="bg-[#002451] rounded-lg border border-white/10 p-6 shadow-lg"
               >
                 <div className="flex items-start justify-between mb-3">
                   <h3 className="text-lg font-bold text-white line-clamp-2 flex-1">
@@ -205,19 +204,10 @@ export default function CoachTasksPage() {
                   </span>
                 </div>
 
-                <div className="flex items-center justify-between pt-4 border-t border-white/10">
+                <div className="pt-4 border-t border-white/10">
                   <span className="text-xs text-white/50">
-                    {new Date(task.createdAt).toLocaleDateString()}
+                    Created: {new Date(task.createdAt).toLocaleDateString()}
                   </span>
-                  <button
-                    onClick={(e) => {
-                      e.stopPropagation()
-                      navigate(`/coach/tasks/${task._id}`)
-                    }}
-                    className="text-yellow-400 hover:text-yellow-300 text-sm font-medium"
-                  >
-                    View Details →
-                  </button>
                 </div>
               </div>
             ))}

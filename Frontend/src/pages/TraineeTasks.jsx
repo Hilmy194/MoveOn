@@ -54,7 +54,8 @@ export default function TraineeTasksPage() {
         console.log('🚀 Starting task, assignment ID:', assignmentId)
         await api.patch(`/assignments/${assignmentId}/status`, { status: 'in_progress' })
         alert('✅ Task started!')
-        fetchTasks()
+        // Refresh tasks to show updated status
+        await fetchTasks()
       } else if (action === 'complete') {
         // Show submission form
         const duration = prompt('How many minutes did you complete? (e.g., 30):')
@@ -75,8 +76,9 @@ export default function TraineeTasksPage() {
         const response = await submissionAPI.submitTask(submissionData)
         
         if (response.success) {
-          alert('✅ Task completed and submitted successfully!')
-          fetchTasks()
+          alert('✅ Task completed and submitted successfully! Your progress has been updated.')
+          // Refresh tasks to show updated stats
+          await fetchTasks()
         }
       }
     } catch (err) {

@@ -1,17 +1,8 @@
 // Lightweight AI client: uses external API if VITE_AI_API_URL is configured,
-// otherwise falls back to a local rule-based assistant.
+// otherwise falls back to a local rule-based assistant over a small foods dataset.
+import { foods } from '../data/foods.js'
 
 function now() { return Date.now() }
-
-// Minimal fallback foods data
-const foods = [
-  { name: 'Nasi Putih', calories: 130, protein: 2.7, fat: 0.3, carbs: 28, fiber: 0.4, tags: ['carb'], notes: 'Sumber karbohidrat utama' },
-  { name: 'Ayam Dada', calories: 165, protein: 31, fat: 3.6, carbs: 0, fiber: 0, tags: ['protein'], notes: 'Tinggi protein rendah lemak' },
-  { name: 'Telur Ayam', calories: 155, protein: 13, fat: 11, carbs: 1.1, fiber: 0, tags: ['protein', 'fat'], notes: 'Protein lengkap' },
-  { name: 'Tempe', calories: 193, protein: 19, fat: 7.6, carbs: 9, fiber: 0, tags: ['protein'], notes: 'Protein nabati murah' },
-  { name: 'Bayam', calories: 23, protein: 2.9, fat: 0.4, carbs: 3.6, fiber: 2.2, tags: ['veggie'], notes: 'Sayuran hijau tinggi zat besi' },
-  { name: 'Pisang', calories: 89, protein: 1.1, fat: 0.3, carbs: 23, fiber: 2.6, tags: ['carb', 'fruit'], notes: 'Buah energi cepat' }
-]
 
 export async function askMealAssistant({ messages, userProfile, system }) {
   // If an API URL is provided, try calling it. Expect a JSON body with {messages, system, user}

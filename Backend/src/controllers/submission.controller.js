@@ -15,7 +15,7 @@ import { successResponse, errorResponse } from '../utils/response.js';
 // Submit a task (trainee completes an assignment)
 export const submitTask = async (req, res) => {
   try {
-    const traineeId = req.user.id;
+    const traineeId = req.user._id || req.user.id;
     const { 
       assignment_id, 
       duration_minutes, 
@@ -38,7 +38,7 @@ export const submitTask = async (req, res) => {
       return errorResponse(res, 'Assignment not found', 404);
     }
 
-    if (assignment.trainee_id.toString() !== traineeId) {
+    if (assignment.trainee_id.toString() !== traineeId.toString()) {
       return errorResponse(res, 'Unauthorized: This assignment does not belong to you', 403);
     }
 
@@ -69,6 +69,7 @@ export const submitTask = async (req, res) => {
     await updateAssignmentStatus(assignment_id, 'completed');
 
     console.log('✅ [SUBMIT TASK] Submission created:', submission._id);
+    console.log('✅ [SUBMIT TASK] Assignment status updated to completed');
 
     const populatedSubmission = await findById(submission._id);
 

@@ -26,6 +26,7 @@ export const authenticateToken = async (req, res, next) => {
     }
 
     req.user = {
+      _id: user._id,
       id: user._id.toString(),
       username: user.username,
       email: user.email,
@@ -95,6 +96,7 @@ export const optionalAuth = async (req, res, next) => {
       
       if (user) {
         req.user = {
+          _id: user._id,
           id: user._id.toString(),
           username: user.username,
           email: user.email,

@@ -13,6 +13,7 @@ export default function TraineeDetailPage() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
   const [selectedTab, setSelectedTab] = useState('overview')
+  const [sendingFeedback, setSendingFeedback] = useState(false)
 
   useEffect(() => {
     fetchTraineeData()
@@ -76,27 +77,41 @@ export default function TraineeDetailPage() {
     }
   }
 
-  const handleReviewSubmission = async (submissionId, status) => {
-    const feedback = status !== 'approved' ? prompt(`Please provide feedback (optional):`) : null
-    const rating = status === 'approved' ? prompt('Rate this submission (1-5):') : null
+  const handleSendFeedback = async (feedbackText) => {
+    if (!feedbackText || !feedbackText.trim()) {
+      alert('⚠️ Please enter feedback text')
+      return
+    }
 
     try {
-      const reviewData = {
-        status,
-        ...(feedback && { coach_feedback: feedback }),
-        ...(rating && { rating: parseInt(rating) })
-      }
+      setSendingFeedback(true)
+      
+      // Get the actual trainee ID
+      const traineeIdToUse = trainee?.trainee_id || trainee?._id || trainee?.id || id
+      
+      console.log('📤 Sending feedback to trainee ID:', traineeIdToUse)
+      console.log('💬 Feedback:', feedbackText)
+      console.log('🔍 Full URL will be:', `/coach/trainees/${traineeIdToUse}/feedback`)
 
-      const response = await submissionAPI.reviewSubmission(submissionId, reviewData)
+      // Send feedback to trainee
+      const response = await api.post(`/coach/trainees/${traineeIdToUse}/feedback`, {
+        feedback: feedbackText
+      })
 
-      if (response.success) {
-        // Refresh data
-        fetchTraineeData()
-        alert('Submission reviewed successfully!')
+      console.log('✅ Response:', response.data)
+
+      if (response.data.success) {
+        alert('✅ Feedback sent successfully!')
+        // Refresh trainee data to show updated feedback
+        await fetchTraineeData()
       }
     } catch (error) {
-      console.error('❌ Error reviewing submission:', error)
-      alert(error.message || 'Failed to review submission')
+      console.error('❌ Error sending feedback:', error)
+      console.error('❌ Error response:', error.response)
+      const errorMsg = error.response?.data?.message || error.message || 'Failed to send feedback'
+      alert(`❌ ${errorMsg}`)
+    } finally {
+      setSendingFeedback(false)
     }
   }
 
@@ -243,23 +258,34 @@ export default function TraineeDetailPage() {
                 </div>
               </div>
 
-              {/* Quick Actions */}
+              {/* Feedback Form */}
               <div className="bg-[#002451] rounded-lg border border-white/10 p-6">
-                <h2 className="text-xl font-bold text-yellow-400 mb-6">Quick Actions</h2>
-                <div className="space-y-3">
-                  <button className="w-full px-4 py-3 bg-yellow-400 hover:bg-yellow-300 text-[#001a3d] font-semibold rounded-lg transition">
-                    📧 Send Message
+                <h2 className="text-xl font-bold text-yellow-400 mb-4 flex items-center gap-2">
+                  <span>💬</span> Send Feedback
+                </h2>
+                <p className="text-white/60 text-sm mb-4">Provide personalized feedback to help your trainee improve</p>
+                <form onSubmit={(e) => {
+                  e.preventDefault();
+                  const feedback = e.target.feedback.value;
+                  if (feedback.trim()) {
+                    handleSendFeedback(feedback);
+                    e.target.reset();
+                  }
+                }}>
+                  <textarea
+                    name="feedback"
+                    placeholder="Type your feedback here... (e.g., Great progress! Keep up the good work!)" 
+                    className="w-full px-4 py-3 bg-[#001a3d] border border-white/10 rounded-lg text-white placeholder-white/40 focus:outline-none focus:border-yellow-400 transition resize-none mb-4"
+                    rows={6}
+                    required
+                  />
+                  <button 
+                    type="submit"
+                    className="w-full px-4 py-3 bg-gradient-to-r from-yellow-400 to-orange-400 hover:from-yellow-300 hover:to-orange-300 text-[#001a3d] font-bold rounded-lg transition shadow-lg"
+                  >
+                    📤 Send Feedback
                   </button>
-                  <button className="w-full px-4 py-3 bg-blue-500 hover:bg-blue-400 text-white font-semibold rounded-lg transition">
-                    📋 Assign Task
-                  </button>
-                  <button className="w-full px-4 py-3 bg-green-500 hover:bg-green-400 text-white font-semibold rounded-lg transition">
-                    📊 View Report
-                  </button>
-                  <button className="w-full px-4 py-3 border border-white/20 text-white hover:bg-white/5 rounded-lg transition">
-                    ⚙️ Settings
-                  </button>
-                </div>
+                </form>
               </div>
             </div>
           )}
@@ -406,29 +432,6 @@ export default function TraineeDetailPage() {
                           <div className="mb-3 p-3 bg-yellow-900/30 rounded">
                             <p className="text-xs text-white/60 mb-1">Your Feedback:</p>
                             <p className="text-sm text-white">{submission.coach_feedback}</p>
-                          </div>
-                        )}
-
-                        {submission.status === 'submitted' && (
-                          <div className="flex gap-2 mt-4">
-                            <button 
-                              onClick={() => handleReviewSubmission(submission._id, 'approved')}
-                              className="px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg text-sm font-medium transition"
-                            >
-                              ✅ Approve
-                            </button>
-                            <button 
-                              onClick={() => handleReviewSubmission(submission._id, 'needs_revision')}
-                              className="px-4 py-2 bg-orange-600 hover:bg-orange-700 text-white rounded-lg text-sm font-medium transition"
-                            >
-                              🔄 Needs Revision
-                            </button>
-                            <button 
-                              onClick={() => handleReviewSubmission(submission._id, 'rejected')}
-                              className="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg text-sm font-medium transition"
-                            >
-                              ❌ Reject
-                            </button>
                           </div>
                         )}
                       </div>
