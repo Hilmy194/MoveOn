@@ -1,9 +1,18 @@
 import axios from 'axios';
 
-// Base API URL
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
+// Base API URL - automatically adds /api if not present
+const getApiUrl = () => {
+  const baseUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+  // Remove trailing slash if present
+  const cleanUrl = baseUrl.replace(/\/$/, '');
+  // Add /api if not already present
+  return cleanUrl.endsWith('/api') ? cleanUrl : `${cleanUrl}/api`;
+};
+
+const API_URL = getApiUrl();
 
 console.log('🌐 API URL:', API_URL);
+console.log('🔧 Environment:', import.meta.env.MODE);
 
 // Create axios instance
 const api = axios.create({
@@ -11,7 +20,8 @@ const api = axios.create({
   headers: {
     'Content-Type': 'application/json',
   },
-  timeout: 10000,
+  timeout: 30000, // Increased for production
+  withCredentials: true,
 });
 
 // Request interceptor
