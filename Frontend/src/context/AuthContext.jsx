@@ -42,10 +42,25 @@ export const AuthProvider = ({ children }) => {
 
   const login = async (username, password) => {
     try {
-      console.log('🔐 Attempting login with:', { username, password })
+      console.log('\n🔐 [FRONTEND] ==================== LOGIN ATTEMPT ====================');
+      console.log('📝 [FRONTEND] Username/Email:', username);
+      console.log('📝 [FRONTEND] Password provided:', password ? 'YES (length: ' + password.length + ')' : 'NO');
       setError(null)
 
-      const response = await api.post('/auth/login', { username, password })
+      // Send both username and email fields to be safe
+      const loginData = {
+        username: username,
+        email: username,
+        password: password
+      };
+      
+      console.log('📤 [FRONTEND] Sending login request with data:', { 
+        username: loginData.username, 
+        email: loginData.email,
+        password: '***' 
+      });
+
+      const response = await api.post('/auth/login', loginData)
 
       console.log('📥 Login response:', response.data)
 

@@ -29,47 +29,69 @@ const generateRefreshToken = (user) => {
 // ==================== LOGIN (SUPER SIMPLE) ====================
 export const login = async (req, res) => {
   try {
-    const { username, password } = req.body;
+    // Accept both 'email' and 'username' fields
+    const { username, email, password } = req.body;
+    const loginIdentifier = username || email;
 
-    console.log('🔐 [LOGIN] Attempt for:', username);
-    console.log('📝 [LOGIN] Request body:', req.body);
-    console.log('🔑 [LOGIN] Headers:', req.headers);
+    console.log('\n🔐 [LOGIN] ==================== NEW LOGIN ATTEMPT ====================');
+    console.log('📝 [LOGIN] Request body fields:', Object.keys(req.body));
+    console.log('📝 [LOGIN] Username field:', username);
+    console.log('📝 [LOGIN] Email field:', email);
+    console.log('📝 [LOGIN] Using identifier:', loginIdentifier);
+    console.log('📝 [LOGIN] Password provided:', password ? 'YES (length: ' + password.length + ')' : 'NO');
 
-    if (!username || !password) {
-      return errorResponse(res, 'Username and password are required', 400);
+    // Validation
+    if (!loginIdentifier) {
+      console.log('❌ [LOGIN] No username or email provided');
+      return errorResponse(res, 'Email or username is required', 400);
+    }
+
+    if (!password) {
+      console.log('❌ [LOGIN] No password provided');
+      return errorResponse(res, 'Password is required', 400);
     }
 
     // FORCE INCLUDE PASSWORD - explicit select
+    console.log('🔍 [LOGIN] Searching for user in database...');
     const user = await User.findOne({
       $or: [
-        { username: username },
-        { email: username }
+        { username: loginIdentifier.toLowerCase().trim() },
+        { email: loginIdentifier.toLowerCase().trim() }
       ]
     }).select('+password'); // ⭐ FORCE include password
 
     if (!user) {
-      console.log('❌ [LOGIN] User not found');
-      return errorResponse(res, 'Invalid username or password', 401);
+      console.log('❌ [LOGIN] User not found with identifier:', loginIdentifier);
+      return errorResponse(res, 'Invalid credentials', 401);
     }
 
-    console.log('✅ [LOGIN] User found:', user.username);
-    console.log('🔍 [LOGIN] Has password:', !!user.password);
+    console.log('✅ [LOGIN] User found!');
+    console.log('   - ID:', user._id);
+    console.log('   - Username:', user.username);
+    console.log('   - Email:', user.email);
+    console.log('   - Role:', user.role);
+    console.log('🔍 [LOGIN] Password in DB:', user.password ? 'EXISTS (length: ' + user.password.length + ')' : 'MISSING');
 
     // Simple password check
     if (!user.password) {
-      console.error('❌ [LOGIN] No password in DB');
-      return errorResponse(res, 'Invalid username or password', 401);
+      console.error('❌ [LOGIN] CRITICAL: User has no password in database!');
+      return errorResponse(res, 'Invalid credentials', 401);
     }
 
     // Compare password
+    console.log('🔐 [LOGIN] Comparing passwords...');
+    console.log('   - Input password length:', password.length);
+    console.log('   - Stored hash length:', user.password.length);
+    
     const isValid = await bcrypt.compare(password, user.password);
+    console.log('🔐 [LOGIN] Password comparison result:', isValid ? '✅ MATCH' : '❌ NO MATCH');
 
     if (!isValid) {
-      console.log('❌ [LOGIN] Wrong password');
-      return errorResponse(res, 'Invalid username or password', 401);
+      console.log('❌ [LOGIN] Password mismatch for user:', user.username);
+      return errorResponse(res, 'Invalid credentials', 401);
     }
 
-    console.log('✅ [LOGIN] Password OK');
+    console.log('✅ [LOGIN] Password verified successfully!');
 
     // Generate tokens
     const token = generateToken(user);
@@ -87,7 +109,10 @@ export const login = async (req, res) => {
       refreshToken
     };
 
-    console.log('✅ [LOGIN] SUCCESS');
+    console.log('✅ [LOGIN] SUCCESS - Sending response');
+    console.log('📤 [LOGIN] User data:', { id: userData.id, username: userData.username, role: userData.role });
+    console.log('🔐 [LOGIN] Token generated:', token ? 'YES' : 'NO');
+    console.log('==================== LOGIN COMPLETE ====================\n');
 
     return successResponse(res, userData, 'Login successful');
 
@@ -133,14 +158,11 @@ export const register = async (req, res) => {
 
     console.log('✅ Validation passed, creating user...');
 
-    // Hash password
-    const hashedPassword = await bcrypt.hash(password, 10);
-
-    // Create user
+    // Create user - NO MANUAL HASHING! Pre-save hook will hash it
     const user = new User({
       username: username.trim(),
       email: email.toLowerCase().trim(),
-      password: hashedPassword,
+      password: password, // Plain password - will be hashed by pre-save hook
       full_name: full_name?.trim() || username.trim(),
       role,
       profile_picture: null,
@@ -149,6 +171,7 @@ export const register = async (req, res) => {
       fitness_level: role === 'trainee' ? 'beginner' : undefined
     });
 
+    console.log('💾 [REGISTER] Saving user... (password will be auto-hashed by pre-save hook)');
     await user.save();
 
     console.log('✅ User created successfully:', user.username, 'Role:', user.role);
